@@ -4,6 +4,8 @@ var sleep = require("sleep");
 var rxjs = require("rxjs");
 var colors = require("colors");
 
+var http = require('http');
+
 if (process.argv.length < 4) {
     console.log("Provide password to Bosch Bridge as argument: npm test.js -- PASSWORD");
     process.exit(1);
@@ -50,6 +52,35 @@ pair.subscribe(val => {
                         console.log(colors.blue("Received event: ") +
                                     "device: living room, state: " + deviceService.state.on);
 
+                        // Data to send
+                        var postData = 'ON';
+                        if (!deviceService.state.on) {
+                            postData = 'OFF';
+                        }
+
+                        // Send update to OpenHab
+                        var options = {
+                            host: "127.0.0.1",
+                            port: 8080,
+                            path: "/rest/items/BSH_Living_Room",
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'text/plain',
+                                'Content-Length': postData.length
+                            }
+                        };
+
+                        console.log(colors.blue('Sending command: ') + postData);
+                        const req = http.request(options, function(res) {
+                            console.log(colors.blue('STATUS: ') + res.statusCode);
+                            console.log(colors.blue('HEADERS: ') + JSON.stringify(res.headers));
+                            res.setEncoding('utf8');
+                            res.on('data', function (chunk) {
+                                console.log(colors.blue('BODY: ') + chunk);
+                            });
+                        });
+                        req.write(postData);
+                        req.end();
                     }
                     else {
                         console.log(colors.red("Received unhandled event: ") +
