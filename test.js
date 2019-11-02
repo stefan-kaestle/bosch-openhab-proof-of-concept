@@ -43,7 +43,18 @@ pair.subscribe(val => {
             console.log("Subscribed to events: " + result);
             bshb.getBshcClient().longPolling(mac, result.result).subscribe(info => {
                 info.result.forEach(deviceService => {
-                    console.log(colors.red("Received event: ") + JSON.stringify(deviceService));
+
+                    // "deviceId":"roomLightControl_hz_2"
+                    // "state":{"@type":"binarySwitchState","on":true}
+                    if (deviceService.deviceId == "roomLightControl_hz_2") {
+                        console.log(colors.blue("Received event: ") +
+                                    "device: living room, state: " + deviceService.state.on);
+
+                    }
+                    else {
+                        console.log(colors.red("Received unhandled event: ") +
+                                    JSON.stringify(deviceService));
+                    }
                 });
             }, function() {
                 pollingTrigger.next(true);
