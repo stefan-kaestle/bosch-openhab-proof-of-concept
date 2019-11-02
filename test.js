@@ -59,10 +59,20 @@ const pair = bshb.pairIfNeeded(password);
 pair.subscribe(val => {
     console.log("Pairing done");
     const client = bshb.getBshcClient();
+
+    // Get a list of all devices
     client.getDevices().subscribe(function (devices) {
         for (const device of devices) {
             console.log(colors.green("Found device: ") + device.name +
                         " ID: " + colors.yellow(device.id));
+            console.log(JSON.stringify(device));
+        }
+    });
+
+    // Get a list of all rooms
+    client.getRooms().subscribe(function (rooms) {
+        for (const room of rooms) {
+            console.log(colors.yellow("Found room: ") + JSON.stringify(room));
         }
     });
 
