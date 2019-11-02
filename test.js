@@ -14,6 +14,40 @@ if (process.argv.length < 4) {
 var password = process.argv[3];
 console.log("Password: " + password);
 
+function send_command_to_openhab(item, state) {
+
+    // Data to send
+    var postData = 'ON';
+    if (!state) {
+        postData = 'OFF';
+    }
+
+    // Send update to OpenHab
+    var options = {
+        host: "127.0.0.1",
+        port: 8080,
+        path: "/rest/items/" + item,
+        method: 'POST',
+        headers: {
+            'Content-Type': 'text/plain',
+            'Content-Length': postData.length
+        }
+    };
+
+    console.log(colors.blue('Sending command: ') + postData);
+    const req = http.request(options, function(res) {
+        console.log(colors.blue('STATUS: ') + res.statusCode);
+        console.log(colors.blue('HEADERS: ') + JSON.stringify(res.headers));
+        res.setEncoding('utf8');
+        res.on('data', function (chunk) {
+            console.log(colors.blue('BODY: ') + chunk);
+        });
+    });
+    req.write(postData);
+    req.end();
+
+}
+
 const bshb = new bosch.BoschSmartHomeBridge('192.168.178.128',
                                            'stefans-bsmb',
                                            '/tmp', new bosch.DefaultLogger());
@@ -48,39 +82,30 @@ pair.subscribe(val => {
 
                     // "deviceId":"roomLightControl_hz_2"
                     // "state":{"@type":"binarySwitchState","on":true}
-                    if (deviceService.deviceId == "roomLightControl_hz_2") {
+                    if (deviceService.deviceId == "roomLightControl_hz_1") {
+                        console.log(colors.blue("Received event: ") +
+                                    "device: bedroom, state: " + deviceService.state.on);
+                        send_command_to_openhab("BSH_Bedroom", deviceService.state.on);
+                    }
+                    else if (deviceService.deviceId == "roomLightControl_hz_2") {
                         console.log(colors.blue("Received event: ") +
                                     "device: living room, state: " + deviceService.state.on);
-
-                        // Data to send
-                        var postData = 'ON';
-                        if (!deviceService.state.on) {
-                            postData = 'OFF';
-                        }
-
-                        // Send update to OpenHab
-                        var options = {
-                            host: "127.0.0.1",
-                            port: 8080,
-                            path: "/rest/items/BSH_Living_Room",
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'text/plain',
-                                'Content-Length': postData.length
-                            }
-                        };
-
-                        console.log(colors.blue('Sending command: ') + postData);
-                        const req = http.request(options, function(res) {
-                            console.log(colors.blue('STATUS: ') + res.statusCode);
-                            console.log(colors.blue('HEADERS: ') + JSON.stringify(res.headers));
-                            res.setEncoding('utf8');
-                            res.on('data', function (chunk) {
-                                console.log(colors.blue('BODY: ') + chunk);
-                            });
-                        });
-                        req.write(postData);
-                        req.end();
+                        send_command_to_openhab("BSH_Living_Room", deviceService.state.on);
+                    }
+                    else if (deviceService.deviceId == "roomLightControl_hz_3") {
+                        console.log(colors.blue("Received event: ") +
+                                    "device: kitchen, state: " + deviceService.state.on);
+                        send_command_to_openhab("BSH_Kitchen", deviceService.state.on);
+                    }
+                    else if (deviceService.deviceId == "roomLightControl_hz_4") {
+                        console.log(colors.blue("Received event: ") +
+                                    "device: bathroom, state: " + deviceService.state.on);
+                        send_command_to_openhab("BSH_Bathroom", deviceService.state.on);
+                    }
+                    else if (deviceService.deviceId == "roomLightControl_hz_5") {
+                        console.log(colors.blue("Received event: ") +
+                                    "device: corridor, state: " + deviceService.state.on);
+                        send_command_to_openhab("BSH_Corridor", deviceService.state.on);
                     }
                     else {
                         console.log(colors.red("Received unhandled event: ") +
